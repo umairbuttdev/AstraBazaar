@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { connection } from "next/server";
+import { getCart } from "@/lib/cart-api";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./sign-out-button";
 
@@ -9,6 +10,10 @@ export async function SiteHeader() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const cart = user ? await getCart() : null;
+  const itemCount =
+    cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
 
   return (
     <header className="sticky top-0 z-30 border-b border-ink/8 bg-paper/80 backdrop-blur-md">
@@ -23,8 +28,14 @@ export async function SiteHeader() {
           <Link href="/#catalog" className="transition-colors hover:text-ink">
             Catalog
           </Link>
+          <Link href="/cart" className="transition-colors hover:text-ink">
+            Cart{itemCount > 0 ? ` (${itemCount})` : ""}
+          </Link>
           {user ? (
             <>
+              <Link href="/orders" className="transition-colors hover:text-ink">
+                Orders
+              </Link>
               <span className="hidden max-w-[12rem] truncate sm:inline">
                 {user.email}
               </span>
