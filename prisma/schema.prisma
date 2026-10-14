@@ -12,6 +12,23 @@ enum ProductStatus {
   ARCHIVED
 }
 
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+model Profile {
+  id        String   @id // Matches auth.users.id from Supabase
+  email     String   @unique
+  fullName  String?
+  role      UserRole @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+
 model Category {
   id          String     @id @default(cuid())
   name        String

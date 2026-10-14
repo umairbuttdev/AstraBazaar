@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Manrope, Syne } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
+import { SiteHeaderFallback } from "@/components/site-header-fallback";
 import "./globals.css";
 
 const syne = Syne({
@@ -30,7 +32,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${syne.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans">
-        <SiteHeader />
+        <Suspense fallback={<SiteHeaderFallback />}>
+          <SiteHeader />
+        </Suspense>
         {children}
       </body>
     </html>
