@@ -1,26 +1,109 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #101820;
+  --ink-soft: #2a3441;
+  --mist: #d7dde4;
+  --paper: #f2f4f6;
+  --copper: #c4783a;
+  --copper-deep: #9a5a28;
+  --foam: #f7f8f9;
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --font-display: var(--font-syne);
+  --font-body: var(--font-manrope);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-mist: var(--mist);
+  --color-paper: var(--paper);
+  --color-copper: var(--copper);
+  --color-copper-deep: var(--copper-deep);
+  --color-foam: var(--foam);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(196, 120, 58, 0.12), transparent 34%),
+    radial-gradient(circle at 88% 0%, rgba(16, 24, 32, 0.08), transparent 28%),
+    linear-gradient(180deg, #eef1f4 0%, var(--paper) 42%, #e7ebef 100%);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes drift-zoom {
+  from {
+    transform: scale(1.08) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1) translate3d(0, -1.5%, 0);
+  }
+}
+
+@keyframes fade-grid {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  animation: rise-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-rise-delay {
+  animation: rise-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+.animate-hero-media {
+  animation: drift-zoom 12s ease-out both;
+}
+
+.animate-product-item {
+  animation: fade-grid 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .animate-rise-delay,
+  .animate-hero-media,
+  .animate-product-item {
+    animation: none;
+  }
 }
