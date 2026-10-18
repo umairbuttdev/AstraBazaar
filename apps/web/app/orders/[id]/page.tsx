@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { getOrder } from "@/lib/checkout-api";
 
@@ -20,6 +21,7 @@ function formatPrice(value: string) {
 }
 
 async function OrderContent({ params }: OrderPageProps) {
+  await connection();
   const { id } = await params;
   const order = await getOrder(id);
 

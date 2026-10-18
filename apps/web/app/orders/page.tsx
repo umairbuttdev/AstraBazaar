@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { listOrders } from "@/lib/checkout-api";
 
@@ -22,6 +23,7 @@ function formatDate(value: string) {
 }
 
 async function OrdersContent() {
+  await connection();
   const orders = await listOrders();
 
   if (!orders) {

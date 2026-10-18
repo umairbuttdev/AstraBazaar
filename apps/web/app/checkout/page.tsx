@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { placeOrderAction } from "@/app/checkout/actions";
 import { getCart } from "@/lib/cart-api";
@@ -21,6 +22,7 @@ function formatPrice(value: string) {
 }
 
 async function CheckoutContent({ searchParams }: CheckoutPageProps) {
+  await connection();
   const params = await searchParams;
   const supabase = await createClient();
   const {

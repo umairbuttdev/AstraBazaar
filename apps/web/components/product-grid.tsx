@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { ProductImage } from "@/components/product-image";
 import { getProducts } from "@/lib/api";
 
 function formatPrice(value: string) {
@@ -42,15 +42,13 @@ export async function ProductGrid() {
           >
             <Link href={`/products/${product.slug}`} className="block">
               <div className="relative aspect-[4/5] overflow-hidden bg-mist">
-                {image ? (
-                  <Image
-                    src={image.url}
-                    alt={image.alt ?? product.name}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                  />
-                ) : null}
+                <ProductImage
+                  src={image?.url}
+                  alt={image?.alt ?? product.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                />
               </div>
               <div className="mt-4 flex items-baseline justify-between gap-4">
                 <div>

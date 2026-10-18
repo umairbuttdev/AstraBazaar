@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { AddToCartForm } from "@/components/add-to-cart-form";
+import { ProductImage } from "@/components/product-image";
 import { getProductBySlug, getProducts } from "@/lib/api";
 
 type ProductPageProps = {
@@ -67,16 +67,14 @@ async function ProductDetails({ params, searchParams }: ProductPageProps) {
   return (
     <div className="mx-auto grid w-full max-w-7xl gap-10 px-6 py-12 md:grid-cols-2 md:gap-16 md:px-10 md:py-20">
       <div className="relative aspect-[4/5] overflow-hidden bg-mist">
-        {image ? (
-          <Image
-            src={image.url}
-            alt={image.alt ?? product.name}
-            fill
-            priority
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover"
-          />
-        ) : null}
+        <ProductImage
+          src={image?.url}
+          alt={image?.alt ?? product.name}
+          fill
+          priority
+          sizes="(max-width: 768px) 100vw, 50vw"
+          className="object-cover"
+        />
       </div>
 
       <div className="flex flex-col justify-center">
