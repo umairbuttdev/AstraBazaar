@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -84,6 +85,11 @@ export class AdminController {
       id,
       body.status as OrderStatus,
     );
+  }
+
+  @Delete('orders/:id')
+  deleteOrder(@Param('id') id: string) {
+    return this.adminService.deleteOrder(id);
   }
 
   @Get('categories')

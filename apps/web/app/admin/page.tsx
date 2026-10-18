@@ -14,7 +14,8 @@ export default async function AdminHomePage() {
 
   const lowStock = inventory.filter((row) => row.available <= 5).length;
   const openOrders = orders.filter(
-    (order) => order.status === "PENDING" || order.status === "CONFIRMED",
+    (order) =>
+      order.status !== "FULFILLED" && order.status !== "CANCELLED",
   ).length;
 
   const cards = [

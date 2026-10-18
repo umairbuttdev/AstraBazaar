@@ -4,6 +4,7 @@ import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   adminCreateProduct,
+  adminDeleteOrder,
   adminUpdateInventory,
   adminUpdateOrderStatus,
   adminUpdateProduct,
@@ -133,6 +134,8 @@ export async function updateOrderStatusAction(formData: FormData) {
   const status = String(formData.get("status") ?? "") as
     | "PENDING"
     | "CONFIRMED"
+    | "PROCESSING"
+    | "SHIPPED"
     | "CANCELLED"
     | "FULFILLED";
 
@@ -144,5 +147,19 @@ export async function updateOrderStatusAction(formData: FormData) {
 
   redirect(
     `/admin/orders/${id}?message=${encodeURIComponent("Order status updated.")}`,
+  );
+}
+
+export async function deleteAdminOrderAction(formData: FormData) {
+  const orderId = String(formData.get("orderId") ?? "");
+
+  try {
+    await adminDeleteOrder(orderId);
+  } catch (error) {
+    handleAdminError(error, "/admin/orders");
+  }
+
+  redirect(
+    `/admin/orders?message=${encodeURIComponent("Order deleted.")}`,
   );
 }

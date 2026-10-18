@@ -377,6 +377,16 @@ export class AdminService {
     return serializeOrder(order as unknown as Record<string, unknown>);
   }
 
+  async deleteOrder(id: string) {
+    const existing = await this.prisma.order.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException('Order not found');
+    }
+
+    await this.prisma.order.delete({ where: { id } });
+    return { ok: true, id };
+  }
+
   async listCategories() {
     return this.prisma.category.findMany({
       orderBy: { name: 'asc' },

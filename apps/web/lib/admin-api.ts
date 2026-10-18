@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Product } from "./types";
 import type { Order } from "./order-types";
@@ -52,6 +53,7 @@ function getApiBaseUrl() {
 }
 
 async function getAccessToken() {
+  await connection();
   const supabase = await createClient();
   const {
     data: { session },
@@ -156,6 +158,12 @@ export async function adminUpdateOrderStatus(
   return adminFetch<Order>(`/admin/orders/${id}/status`, {
     method: "PATCH",
     body: JSON.stringify({ status }),
+  });
+}
+
+export async function adminDeleteOrder(id: string) {
+  return adminFetch<{ ok: boolean; id: string }>(`/admin/orders/${id}`, {
+    method: "DELETE",
   });
 }
 

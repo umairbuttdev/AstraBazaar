@@ -1,3 +1,11 @@
+export type OrderStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "PROCESSING"
+  | "SHIPPED"
+  | "FULFILLED"
+  | "CANCELLED";
+
 export type OrderItem = {
   id: string;
   variantId: string;
@@ -11,7 +19,7 @@ export type OrderItem = {
 export type Order = {
   id: string;
   profileId: string;
-  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "FULFILLED";
+  status: OrderStatus;
   subtotal: string;
   total: string;
   currency: string;
@@ -27,3 +35,47 @@ export type Order = {
   items: OrderItem[];
   createdAt: string;
 };
+
+export const ORDER_STEPPER_STEPS = [
+  { status: "PENDING" as const, label: "Placed" },
+  { status: "CONFIRMED" as const, label: "Confirmed" },
+  { status: "PROCESSING" as const, label: "Preparing" },
+  { status: "SHIPPED" as const, label: "On the way" },
+  { status: "FULFILLED" as const, label: "Delivered" },
+];
+
+export const ACTIVE_ORDER_STATUSES: OrderStatus[] = [
+  "PENDING",
+  "CONFIRMED",
+  "PROCESSING",
+  "SHIPPED",
+];
+
+export function orderStatusLabel(status: OrderStatus) {
+  switch (status) {
+    case "PENDING":
+      return "Placed";
+    case "CONFIRMED":
+      return "Confirmed";
+    case "PROCESSING":
+      return "Preparing";
+    case "SHIPPED":
+      return "On the way";
+    case "FULFILLED":
+      return "Delivered";
+    case "CANCELLED":
+      return "Cancelled";
+  }
+}
+
+export function isActiveOrderStatus(status: OrderStatus) {
+  return ACTIVE_ORDER_STATUSES.includes(status);
+}
+
+export function stepperIndexForStatus(status: OrderStatus) {
+  if (status === "CANCELLED") {
+    return -1;
+  }
+  const index = ORDER_STEPPER_STEPS.findIndex((step) => step.status === status);
+  return index;
+}

@@ -20,8 +20,10 @@ enum UserRole {
 enum OrderStatus {
   PENDING
   CONFIRMED
-  CANCELLED
+  PROCESSING
+  SHIPPED
   FULFILLED
+  CANCELLED
 }
 
 model Profile {

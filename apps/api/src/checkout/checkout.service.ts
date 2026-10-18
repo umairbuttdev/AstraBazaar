@@ -221,4 +221,50 @@ export class CheckoutService {
 
     return serializeOrder(order as unknown as Record<string, unknown>);
   }
+
+  async cancelOrder(user: User, orderId: string) {
+    const profile = await this.ensureProfile(user);
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, profileId: profile.id },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    if (
+      order.status === 'FULFILLED' ||
+      order.status === 'CANCELLED' ||
+      order.status === 'SHIPPED'
+    ) {
+      throw new BadRequestException(
+        'This order can no longer be cancelled',
+      );
+    }
+
+    const updated = await this.prisma.order.update({
+      where: { id: order.id },
+      data: { status: 'CANCELLED' },
+      include: this.orderInclude(),
+    });
+
+    return serializeOrder(updated as unknown as Record<string, unknown>);
+  }
+
+  async deleteOrder(user: User, orderId: string) {
+    const profile = await this.ensureProfile(user);
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, profileId: profile.id },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    await this.prisma.order.delete({
+      where: { id: order.id },
+    });
+
+    return { ok: true, id: order.id };
+  }
 }

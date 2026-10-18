@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Cart } from "./cart-types";
 
@@ -10,6 +11,7 @@ function getApiBaseUrl() {
 }
 
 async function getAccessToken() {
+  await connection();
   const supabase = await createClient();
   const {
     data: { session },

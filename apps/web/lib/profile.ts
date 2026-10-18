@@ -1,5 +1,6 @@
 import { PrismaClient, type UserRole } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 function createPrisma() {
@@ -28,6 +29,7 @@ export type ProfileSummary = {
 };
 
 export async function getCurrentProfile(): Promise<ProfileSummary | null> {
+  await connection();
   const supabase = await createClient();
   const {
     data: { user },

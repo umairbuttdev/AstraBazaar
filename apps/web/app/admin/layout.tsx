@@ -1,18 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { connection } from "next/server";
+import { Suspense } from "react";
 import { requireAdminProfile } from "@/lib/profile";
 
 export const metadata = {
   title: "Admin",
 };
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  await connection();
+async function AdminShell({ children }: { children: React.ReactNode }) {
   const { reason } = await requireAdminProfile();
 
   if (reason === "UNAUTHORIZED") {
@@ -62,5 +57,23 @@ export default async function AdminLayout({
       </div>
       {children}
     </div>
+  );
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-10 md:px-10">
+          <p className="text-ink-soft">Loading admin...</p>
+        </main>
+      }
+    >
+      <AdminShell>{children}</AdminShell>
+    </Suspense>
   );
 }
