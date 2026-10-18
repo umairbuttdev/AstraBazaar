@@ -1,10 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import {
   removeCartItemAction,
   updateCartItemAction,
 } from "@/app/cart/actions";
+import { ProductImage } from "@/components/product-image";
 import { getCart } from "@/lib/cart-api";
 
 type CartPageProps = {
@@ -24,6 +25,7 @@ function formatPrice(value: string) {
 }
 
 async function CartContent({ searchParams }: CartPageProps) {
+  await connection();
   const params = await searchParams;
   const cart = await getCart();
 
@@ -91,15 +93,13 @@ async function CartContent({ searchParams }: CartPageProps) {
                   className="grid gap-6 py-6 md:grid-cols-[120px_1fr_auto]"
                 >
                   <div className="relative aspect-square overflow-hidden bg-mist">
-                    {image ? (
-                      <Image
-                        src={image.url}
-                        alt={image.alt ?? item.variant.product.name}
-                        fill
-                        sizes="120px"
-                        className="object-cover"
-                      />
-                    ) : null}
+                    <ProductImage
+                      src={image?.url}
+                      alt={image?.alt ?? item.variant.product.name}
+                      fill
+                      sizes="120px"
+                      className="object-cover"
+                    />
                   </div>
 
                   <div>

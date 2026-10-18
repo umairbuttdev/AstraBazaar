@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Order } from "./order-types";
 
@@ -22,6 +23,7 @@ function getApiBaseUrl() {
 }
 
 async function getAccessToken() {
+  await connection();
   const supabase = await createClient();
   const {
     data: { session },
@@ -32,7 +34,10 @@ async function getAccessToken() {
 
 async function checkoutFetch<T>(
   path: string,
-  init?: RequestInit & { allowUnauthorized?: boolean },
+  init?: RequestInit & {
+    allowUnauthorized?: boolean;
+    allowNotFound?: boolean;
+  },
 ): Promise<T | null> {
   const token = await getAccessToken();
   if (!token) {
@@ -59,6 +64,10 @@ async function checkoutFetch<T>(
     throw new Error("UNAUTHORIZED");
   }
 
+  if (response.status === 404 && init?.allowNotFound) {
+    return null;
+  }
+
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as {
       message?: string | string[];
@@ -82,11 +91,24 @@ export async function placeOrder(shipping: CheckoutShipping) {
 export async function getOrder(orderId: string) {
   return checkoutFetch<Order>(`/orders/${orderId}`, {
     allowUnauthorized: true,
+    allowNotFound: true,
   });
 }
 
 export async function listOrders() {
   return checkoutFetch<Order[]>("/orders", {
     allowUnauthorized: true,
+  });
+}
+
+export async function cancelOrder(orderId: string) {
+  return checkoutFetch<Order>(`/orders/${orderId}/cancel`, {
+    method: "POST",
+  });
+}
+
+export async function deleteOrder(orderId: string) {
+  return checkoutFetch<{ ok: boolean; id: string }>(`/orders/${orderId}`, {
+    method: "DELETE",
   });
 }

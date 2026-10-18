@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
+import { AdminModule } from './admin/admin.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { BrandsModule } from './brands/brands.module.js';
 import { CartModule } from './cart/cart.module.js';
@@ -18,6 +19,7 @@ import { ProductsModule } from './products/products.module.js';
     ProductsModule,
     CartModule,
     CheckoutModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

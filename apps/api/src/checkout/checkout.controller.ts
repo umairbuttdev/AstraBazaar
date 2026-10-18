@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard, type AuthenticatedRequest } from '../auth/auth.guard.js';
 import {
   CheckoutService,
@@ -29,5 +38,21 @@ export class CheckoutController {
     @Param('id') id: string,
   ) {
     return this.checkoutService.getOrder(request.user!, id);
+  }
+
+  @Post('orders/:id/cancel')
+  cancelOrder(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.checkoutService.cancelOrder(request.user!, id);
+  }
+
+  @Delete('orders/:id')
+  deleteOrder(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.checkoutService.deleteOrder(request.user!, id);
   }
 }

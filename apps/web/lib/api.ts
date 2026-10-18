@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import type { Product } from "./types";
 
 function getApiBaseUrl() {
@@ -22,11 +22,14 @@ async function apiFetch<T>(path: string): Promise<T> {
 export async function getProducts() {
   "use cache";
   cacheLife("minutes");
+  cacheTag("products");
   return apiFetch<Product[]>("/products");
 }
 
 export async function getProductBySlug(slug: string) {
   "use cache";
   cacheLife("minutes");
+  cacheTag("products");
+  cacheTag(`product:${slug}`);
   return apiFetch<Product>(`/products/${slug}`);
 }
