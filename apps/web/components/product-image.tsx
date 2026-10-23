@@ -52,7 +52,29 @@ export function ProductImage({
     );
   }
 
-  const isLocalUpload = src.startsWith("/uploads/");
+  const remoteHost = src.startsWith("/")
+    ? ""
+    : (() => {
+        try {
+          return new URL(src).hostname;
+        } catch {
+          return "";
+        }
+      })();
+  const optimized =
+    remoteHost === "images.unsplash.com" || remoteHost.endsWith(".supabase.co");
+
+  if (remoteHost && !optimized) {
+    return (
+      // Other hosts stay as plain images so the optimizer is not an open proxy.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt={alt}
+        className={`${fill ? "absolute inset-0 h-full w-full" : ""} ${className ?? ""}`}
+      />
+    );
+  }
 
   return (
     <Image
@@ -62,7 +84,7 @@ export function ProductImage({
       priority={priority}
       sizes={sizes}
       className={className}
-      unoptimized={isLocalUpload || !src.includes("images.unsplash.com")}
+      unoptimized={src.startsWith("/uploads/")}
     />
   );
 }

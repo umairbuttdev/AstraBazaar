@@ -3,10 +3,11 @@ import { AuthForm } from "@/components/auth-form";
 
 export const metadata = {
   title: "Sign in",
+  robots: { index: false, follow: false },
 };
 
 type LoginPageProps = {
-  searchParams: Promise<{ error?: string; message?: string }>;
+  searchParams: Promise<{ error?: string; message?: string; next?: string }>;
 };
 
 async function LoginContent({ searchParams }: LoginPageProps) {
@@ -20,10 +21,15 @@ async function LoginContent({ searchParams }: LoginPageProps) {
           Sign in
         </h1>
         <p className="mt-4 text-ink-soft">
-          Access your AstraBazaar account for cart, checkout, and orders.
+          Access your AstraBazaar account for profile, addresses, wishlist, cart, and orders.
         </p>
       </div>
-      <AuthForm mode="login" error={params.error} message={params.message} />
+      <AuthForm
+        mode="login"
+        error={params.error}
+        message={params.message}
+        next={params.next}
+      />
     </>
   );
 }

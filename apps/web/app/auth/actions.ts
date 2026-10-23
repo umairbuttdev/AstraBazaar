@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { safeNext } from "@/lib/safe-next";
 import { createClient } from "@/lib/supabase/server";
 
 function createPrisma() {
@@ -104,15 +105,19 @@ export async function signIn(formData: FormData) {
     password,
   });
 
+  const next = safeNext(formData.get("next"));
+
   if (error) {
     const message = error.message.toLowerCase().includes("email not confirmed")
       ? "Email not confirmed yet. Check your inbox, or disable Confirm email in Supabase Auth settings for local testing."
       : error.message;
-    redirect(`/login?error=${encodeURIComponent(message)}`);
+    redirect(
+      `/login?next=${encodeURIComponent(next)}&error=${encodeURIComponent(message)}`,
+    );
   }
 
   await ensureProfile();
-  redirect("/");
+  redirect(next);
 }
 
 export async function signOut() {

@@ -1,7 +1,9 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { placeOrder } from "@/lib/checkout-api";
+import { commerceError } from "@/lib/commerce-errors";
 
 export async function placeOrderAction(formData: FormData) {
   const shipping = {
@@ -14,25 +16,29 @@ export async function placeOrderAction(formData: FormData) {
     postalCode: String(formData.get("postalCode") ?? ""),
     country: String(formData.get("country") ?? "US") || "US",
     phone: String(formData.get("phone") ?? "") || undefined,
+    paymentMethod: String(formData.get("paymentMethod") ?? "cod"),
+    shippingMethod: String(formData.get("shippingMethod") ?? "standard"),
+    expectedTotal: String(formData.get("expectedTotal") ?? ""),
   };
 
   let orderId: string;
   try {
     const order = await placeOrder(shipping);
     if (!order) {
-      throw new Error("Could not place order");
+      throw new Error("We couldn't place your order. Please try again.");
     }
     orderId = order.id;
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       redirect(
-        `/login?error=${encodeURIComponent("Please login to checkout.")}`,
+        `/login?next=${encodeURIComponent("/checkout")}&error=${encodeURIComponent("Please login to checkout.")}`,
       );
     }
-    const message =
-      error instanceof Error ? error.message : "Could not place order";
-    redirect(`/checkout?error=${encodeURIComponent(message)}`);
+    redirect(
+      `/checkout?error=${encodeURIComponent(commerceError(error, "We couldn't place your order. Please try again."))}`,
+    );
   }
 
-  redirect(`/orders/${orderId}`);
+  revalidatePath("/", "layout");
+  redirect(`/orders/${orderId}?placed=1`);
 }

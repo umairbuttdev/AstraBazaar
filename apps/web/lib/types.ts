@@ -4,6 +4,7 @@ export type ProductImage = {
   alt: string | null;
   isPrimary: boolean;
   sortOrder: number;
+  variantId?: string | null;
 };
 
 export type Inventory = {
@@ -17,9 +18,10 @@ export type ProductVariant = {
   name: string | null;
   price: string;
   compareAtPrice: string | null;
-  attributes: Record<string, string> | null;
+  attributes: Record<string, string | number> | null;
   isDefault: boolean;
   inventory: Inventory | null;
+  images?: ProductImage[];
 };
 
 export type Category = {
@@ -42,8 +44,10 @@ export type Product = {
   slug: string;
   description: string | null;
   status: string;
-  category: Category | null;
+  category: (Category & { parent?: Category | null }) | null;
   brand: Brand | null;
   images: ProductImage[];
   variants: ProductVariant[];
+  createdAt?: string;
+  updatedAt?: string;
 };

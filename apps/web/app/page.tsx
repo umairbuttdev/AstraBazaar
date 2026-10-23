@@ -1,31 +1,56 @@
 import { Suspense } from "react";
-import { Hero } from "@/components/hero";
-import { ProductGrid, ProductGridFallback } from "@/components/product-grid";
+import { CategorySection } from "@/components/home/category-section";
+import { HomeHero } from "@/components/home/home-hero";
+import { PromoSection } from "@/components/home/promo-section";
+import {
+  TrendingProducts,
+  TrendingProductsFallback,
+} from "@/components/home/trending-products";
+import { TrustBenefits } from "@/components/home/trust-benefits";
+import { JsonLd } from "@/components/seo/json-ld";
+import { getCategories, getProductListing } from "@/lib/api";
+import { websiteStructuredData } from "@/lib/structured-data";
+import { siteUrl } from "@/lib/site";
+import {
+  HOME_HERO_SLIDES,
+  HOME_PROMOS,
+  TRUST_BENEFITS,
+} from "@/lib/home-content";
+
+async function HomeCatalogSections() {
+  let products: Awaited<ReturnType<typeof getProductListing>>["items"] = [];
+  let categories: Awaited<ReturnType<typeof getCategories>> = [];
+
+  try {
+    const [listing, categoryList] = await Promise.all([
+      getProductListing({ limit: 12, sort: "newest" }),
+      getCategories(),
+    ]);
+    products = listing.items;
+    categories = categoryList;
+  } catch {
+    products = [];
+    categories = [];
+  }
+
+  return (
+    <>
+      <CategorySection categories={categories} products={products} />
+      <PromoSection promos={HOME_PROMOS} />
+      <TrendingProducts products={products} />
+    </>
+  );
+}
 
 export default function Home() {
   return (
     <main className="flex-1">
-      <Hero />
-
-      <section
-        id="catalog"
-        className="mx-auto w-full max-w-7xl px-6 py-20 md:px-10 md:py-28"
-      >
-        <div className="mb-12 max-w-2xl">
-          <p className="text-sm tracking-[0.2em] text-copper uppercase">Catalog</p>
-          <h2 className="mt-3 font-display text-4xl text-ink md:text-5xl">
-            In the bazaar now
-          </h2>
-          <p className="mt-4 text-base leading-7 text-ink-soft md:text-lg">
-            Live products from the AstraBazaar API — variants, pricing, and stock
-            included.
-          </p>
-        </div>
-
-        <Suspense fallback={<ProductGridFallback />}>
-          <ProductGrid />
-        </Suspense>
-      </section>
+      <JsonLd data={websiteStructuredData(siteUrl())} />
+      <HomeHero slides={HOME_HERO_SLIDES} />
+      <TrustBenefits items={TRUST_BENEFITS} />
+      <Suspense fallback={<TrendingProductsFallback />}>
+        <HomeCatalogSections />
+      </Suspense>
     </main>
   );
 }

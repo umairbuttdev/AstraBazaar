@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signIn, signUp } from "@/app/auth/actions";
+import { safeNext } from "@/lib/safe-next";
 
 type AuthMode = "login" | "signup";
 
@@ -7,13 +8,16 @@ type AuthFormProps = {
   mode: AuthMode;
   error?: string;
   message?: string;
+  next?: string;
 };
 
-export function AuthForm({ mode, error, message }: AuthFormProps) {
+export function AuthForm({ mode, error, message, next }: AuthFormProps) {
   const action = mode === "signup" ? signUp : signIn;
+  const returnTo = safeNext(next);
 
   return (
     <form action={action} className="mx-auto w-full max-w-md space-y-5">
+      <input type="hidden" name="next" value={returnTo} />
       {mode === "signup" ? (
         <label className="block">
           <span className="text-sm text-ink-soft">Full name</span>
@@ -79,7 +83,7 @@ export function AuthForm({ mode, error, message }: AuthFormProps) {
           <>
             New to AstraBazaar?{" "}
             <Link
-              href="/signup"
+              href={returnTo === "/" ? "/signup" : `/signup?next=${encodeURIComponent(returnTo)}`}
               className="text-ink underline underline-offset-4"
             >
               Create an account

@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { Order } from "./order-types";
+import type { Order, OrderList } from "./order-types";
+import type { CheckoutQuote, SavedAddress } from "./checkout-types";
 
 export type CheckoutShipping = {
   email: string;
@@ -12,6 +13,9 @@ export type CheckoutShipping = {
   postalCode: string;
   country?: string;
   phone?: string;
+  paymentMethod?: string;
+  shippingMethod?: string;
+  expectedTotal?: string;
 };
 
 function getApiBaseUrl() {
@@ -81,6 +85,18 @@ async function checkoutFetch<T>(
   return response.json() as Promise<T>;
 }
 
+export async function getCheckoutQuote() {
+  return checkoutFetch<CheckoutQuote>("/checkout", {
+    allowUnauthorized: true,
+  });
+}
+
+export async function listCheckoutAddresses() {
+  return checkoutFetch<SavedAddress[]>("/checkout/addresses", {
+    allowUnauthorized: true,
+  });
+}
+
 export async function placeOrder(shipping: CheckoutShipping) {
   return checkoutFetch<Order>("/checkout", {
     method: "POST",
@@ -95,8 +111,17 @@ export async function getOrder(orderId: string) {
   });
 }
 
-export async function listOrders() {
-  return checkoutFetch<Order[]>("/orders", {
+export async function listOrders(query?: {
+  page?: number;
+  filter?: string;
+  limit?: number;
+}) {
+  const params = new URLSearchParams();
+  if (query?.page && query.page > 1) params.set("page", String(query.page));
+  if (query?.limit) params.set("limit", String(query.limit));
+  if (query?.filter && query.filter !== "all") params.set("filter", query.filter);
+  const suffix = params.toString() ? `?${params}` : "";
+  return checkoutFetch<OrderList>(`/orders${suffix}`, {
     allowUnauthorized: true,
   });
 }

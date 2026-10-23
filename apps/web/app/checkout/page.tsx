@@ -1,25 +1,22 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { placeOrderAction } from "@/app/checkout/actions";
-import { getCart } from "@/lib/cart-api";
+import { CheckoutForm } from "@/components/checkout/checkout-form";
+import { Button } from "@/components/ui/button";
+import {
+  getCheckoutQuote,
+  listCheckoutAddresses,
+} from "@/lib/checkout-api";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata = {
+  title: "Checkout",
+  robots: { index: false, follow: false },
+};
 
 type CheckoutPageProps = {
   searchParams: Promise<{ error?: string }>;
 };
-
-function formatPrice(value: string) {
-  const amount = Number(value);
-  if (Number.isNaN(amount)) {
-    return value;
-  }
-
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount);
-}
 
 async function CheckoutContent({ searchParams }: CheckoutPageProps) {
   await connection();
@@ -28,236 +25,117 @@ async function CheckoutContent({ searchParams }: CheckoutPageProps) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const cart = await getCart();
 
-  if (!cart || !user) {
+  if (!user) {
     return (
       <div className="max-w-xl">
-        <p className="text-sm tracking-[0.2em] text-copper uppercase">
-          Checkout
-        </p>
-        <h1 className="mt-3 font-display text-4xl text-ink md:text-5xl">
-          Checkout
-        </h1>
-        <p className="mt-4 text-ink-soft">
+        <p className="text-caption text-primary">Checkout</p>
+        <h1 className="text-h1 mt-3">Checkout</h1>
+        <p className="text-body mt-4 text-foreground-muted">
           Login to complete your order.
         </p>
-        <Link
-          href="/login"
-          className="mt-8 inline-flex bg-ink px-5 py-3 text-sm font-semibold text-foam transition-colors hover:bg-copper"
-        >
+        <Button href="/login?next=%2Fcheckout" className="mt-8" variant="dark">
           Login
-        </Link>
+        </Button>
       </div>
     );
   }
 
-  if (cart.items.length === 0) {
+  let quote = null;
+  let addresses: Awaited<ReturnType<typeof listCheckoutAddresses>> = [];
+  try {
+    quote = await getCheckoutQuote();
+    addresses = (await listCheckoutAddresses()) ?? [];
+  } catch {
+    quote = null;
+  }
+
+  if (!quote) {
     return (
       <div className="max-w-xl">
-        <p className="text-sm tracking-[0.2em] text-copper uppercase">
-          Checkout
+        <p className="text-caption text-primary">Checkout</p>
+        <h1 className="text-h1 mt-3">Checkout</h1>
+        <p className="text-body mt-4 text-foreground-muted">
+          We couldn&apos;t load checkout. Please try again.
         </p>
-        <h1 className="mt-3 font-display text-4xl text-ink md:text-5xl">
-          Checkout
-        </h1>
-        <p className="mt-4 text-ink-soft">Your cart is empty.</p>
-        <Link
-          href="/#catalog"
-          className="mt-8 inline-flex bg-ink px-5 py-3 text-sm font-semibold text-foam transition-colors hover:bg-copper"
-        >
-          Browse catalog
-        </Link>
+        <Button href="/checkout" className="mt-8" variant="dark">
+          Retry
+        </Button>
       </div>
     );
   }
 
-  const total = cart.items.reduce((sum, item) => {
-    return sum + Number(item.variant.price) * item.quantity;
-  }, 0);
+  if (quote.items.length === 0) {
+    return (
+      <div className="max-w-xl">
+        <p className="text-caption text-primary">Checkout</p>
+        <h1 className="text-h1 mt-3">Checkout</h1>
+        <p className="text-body mt-4 text-foreground-muted">
+          Your cart is empty. Add something before checkout.
+        </p>
+        <Button href="/products" className="mt-8" variant="dark">
+          Start shopping
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr]">
-      <div>
-        <p className="text-sm tracking-[0.2em] text-copper uppercase">
-          Checkout
+    <>
+      <div className="max-w-xl">
+        <p className="text-caption text-primary">Checkout</p>
+        <h1 className="text-h1 mt-3">Checkout</h1>
+        <p className="text-body mt-4 text-foreground-muted">
+          Confirm the address, delivery, and payment. The order total is
+          calculated again when you place the order.
         </p>
-        <h1 className="mt-3 font-display text-4xl text-ink md:text-5xl">
-          Shipping details
-        </h1>
-        <p className="mt-4 max-w-md text-ink-soft">
-          Confirm your address to place the order. Payment integration comes
-          next — for now orders are confirmed immediately.
-        </p>
-
-        {params.error ? (
-          <p className="mt-6 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            {params.error}
-          </p>
-        ) : null}
-
-        <form action={placeOrderAction} className="mt-10 space-y-5">
-          <label className="block">
-            <span className="text-sm tracking-[0.14em] text-ink-soft uppercase">
-              Email
-            </span>
-            <input
-              type="email"
-              name="email"
-              required
-              defaultValue={user.email ?? ""}
-              className="mt-2 w-full border border-ink/15 bg-foam px-4 py-3 text-ink outline-none transition focus:border-copper"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm tracking-[0.14em] text-ink-soft uppercase">
-              Full name
-            </span>
-            <input
-              type="text"
-              name="fullName"
-              required
-              defaultValue={
-                typeof user.user_metadata?.full_name === "string"
-                  ? user.user_metadata.full_name
-                  : ""
-              }
-              className="mt-2 w-full border border-ink/15 bg-foam px-4 py-3 text-ink outline-none transition focus:border-copper"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm tracking-[0.14em] text-ink-soft uppercase">
-              Address
-            </span>
-            <input
-              type="text"
-              name="line1"
-              required
-              className="mt-2 w-full border border-ink/15 bg-foam px-4 py-3 text-ink outline-none transition focus:border-copper"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm tracking-[0.14em] text-ink-soft uppercase">
-              Apartment, suite (optional)
-            </span>
-            <input
-              type="text"
-              name="line2"
-              className="mt-2 w-full border border-ink/15 bg-foam px-4 py-3 text-ink outline-none transition focus:border-copper"
-            />
-          </label>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-sm tracking-[0.14em] text-ink-soft uppercase">
-                City
-              </span>
-              <input
-                type="text"
-                name="city"
-                required
-                className="mt-2 w-full border border-ink/15 bg-foam px-4 py-3 text-ink outline-none transition focus:border-copper"
-              />
-            </label>
-            <label className="block">
-              <span className="text-sm tracking-[0.14em] text-ink-soft uppercase">
-                State
-              </span>
-              <input
-                type="text"
-                name="state"
-                className="mt-2 w-full border border-ink/15 bg-foam px-4 py-3 text-ink outline-none transition focus:border-copper"
-              />
-            </label>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-sm tracking-[0.14em] text-ink-soft uppercase">
-                Postal code
-              </span>
-              <input
-                type="text"
-                name="postalCode"
-                required
-                className="mt-2 w-full border border-ink/15 bg-foam px-4 py-3 text-ink outline-none transition focus:border-copper"
-              />
-            </label>
-            <label className="block">
-              <span className="text-sm tracking-[0.14em] text-ink-soft uppercase">
-                Country
-              </span>
-              <input
-                type="text"
-                name="country"
-                defaultValue="US"
-                required
-                className="mt-2 w-full border border-ink/15 bg-foam px-4 py-3 text-ink outline-none transition focus:border-copper"
-              />
-            </label>
-          </div>
-
-          <label className="block">
-            <span className="text-sm tracking-[0.14em] text-ink-soft uppercase">
-              Phone (optional)
-            </span>
-            <input
-              type="tel"
-              name="phone"
-              className="mt-2 w-full border border-ink/15 bg-foam px-4 py-3 text-ink outline-none transition focus:border-copper"
-            />
-          </label>
-
-          <button
-            type="submit"
-            className="bg-ink px-6 py-3 text-sm font-semibold tracking-wide text-foam transition-colors hover:bg-copper"
-          >
-            Place order
-          </button>
-        </form>
       </div>
 
-      <aside className="border-t border-ink/10 pt-8 lg:border-t-0 lg:border-l lg:pl-10 lg:pt-0">
-        <h2 className="font-display text-2xl text-ink">Order summary</h2>
-        <ul className="mt-6 divide-y divide-ink/10 border-y border-ink/10">
-          {cart.items.map((item) => {
-            const lineTotal = Number(item.variant.price) * item.quantity;
-            return (
-              <li key={item.id} className="flex justify-between gap-4 py-4">
-                <div>
-                  <p className="text-ink">{item.variant.product.name}</p>
-                  <p className="mt-1 text-sm text-ink-soft">
-                    {item.variant.name ?? item.variant.sku} × {item.quantity}
-                  </p>
-                </div>
-                <p className="font-semibold text-ink">
-                  {formatPrice(lineTotal.toFixed(2))}
-                </p>
-              </li>
-            );
-          })}
-        </ul>
-        <p className="mt-6 text-xl font-semibold text-ink">
-          Total {formatPrice(total.toFixed(2))}
-        </p>
-        <Link
-          href="/cart"
-          className="mt-4 inline-block text-sm text-ink-soft underline underline-offset-4 transition-colors hover:text-ink"
+      {params.error ? (
+        <p
+          className="mt-6 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+          role="alert"
         >
-          Edit cart
-        </Link>
-      </aside>
+          {params.error}{" "}
+          <Link href="/cart" className="font-semibold underline">
+            Review cart
+          </Link>
+        </p>
+      ) : null}
+
+      <div className="mt-8">
+        <CheckoutForm
+          quote={quote}
+          addresses={addresses}
+          email={user.email ?? ""}
+          fullName={
+            typeof user.user_metadata?.full_name === "string"
+              ? user.user_metadata.full_name
+              : ""
+          }
+        />
+      </div>
+    </>
+  );
+}
+
+function CheckoutSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="h-4 w-24 rounded bg-surface-secondary" />
+      <div className="mt-4 h-10 w-48 rounded bg-surface-secondary" />
+      <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="h-80 rounded-lg bg-surface-secondary" />
+        <div className="h-64 rounded-lg bg-surface-secondary" />
+      </div>
     </div>
   );
 }
 
 export default function CheckoutPage(props: CheckoutPageProps) {
   return (
-    <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-16 md:px-10">
-      <Suspense fallback={<p className="text-ink-soft">Loading checkout...</p>}>
+    <main className="container-page flex-1 py-8 pb-28 md:py-12 md:pb-12">
+      <Suspense fallback={<CheckoutSkeleton />}>
         <CheckoutContent {...props} />
       </Suspense>
     </main>

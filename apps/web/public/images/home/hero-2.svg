@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Featured edit backdrop">
+  <defs>
+    <linearGradient id="g2" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#101820"/>
+      <stop offset="50%" stop-color="#3d2a1c"/>
+      <stop offset="100%" stop-color="#8f5224"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#g2)"/>
+  <ellipse cx="1200" cy="500" rx="280" ry="360" fill="#ffffff" fill-opacity="0.07"/>
+  <rect x="1040" y="280" width="320" height="440" rx="20" fill="#ffffff" fill-opacity="0.1"/>
+</svg>

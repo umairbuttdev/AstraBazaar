@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { deleteOrderAction as deleteCustomerOrderAction } from "@/app/orders/actions";
 import { deleteAdminOrderAction } from "@/app/admin/actions";
 import { OrderStatusStepper } from "@/components/order-status-stepper";
-import { orderStatusLabel, type Order } from "@/lib/order-types";
+import { DeleteConfirmButton } from "@/components/ui/confirm-dialog";
+import { orderStatusLabel, paymentMethodLabel, paymentStatusLabel, type Order } from "@/lib/order-types";
 
 function formatPrice(value: string) {
   const amount = Number(value);
@@ -72,14 +75,21 @@ export function OrderCard({ order, mode = "customer" }: OrderCardProps) {
             {order.status === "FULFILLED" ? "✓ " : ""}
             {orderStatusLabel(order.status)}
           </span>
-          <form action={deleteAction}>
-            <input type="hidden" name="orderId" value={order.id} />
-            <button
-              type="submit"
-              aria-label="Delete order"
-              title="Delete order"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-700 transition-colors hover:bg-red-100"
-            >
+          <DeleteConfirmButton
+            action={deleteAction}
+            fields={{ orderId: order.id }}
+            title="Delete order?"
+            description={
+              isAdmin
+                ? "Permanently delete this order from the database? This cannot be undone. Stock is restored only when the order was still cancellable."
+                : "Delete this order from your account? This cannot be undone."
+            }
+            confirmLabel="Delete order"
+            cancelLabel="Keep order"
+            triggerAriaLabel="Delete order"
+            triggerTitle="Delete order"
+            triggerClassName="inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-700 transition-colors hover:bg-red-100"
+            trigger={
               <svg
                 viewBox="0 0 24 24"
                 aria-hidden
@@ -92,8 +102,8 @@ export function OrderCard({ order, mode = "customer" }: OrderCardProps) {
                 <path d="M9 7V5h6v2" />
                 <path d="M8 7l1 12h6l1-12" />
               </svg>
-            </button>
-          </form>
+            }
+          />
         </div>
       </div>
 
@@ -124,11 +134,26 @@ export function OrderCard({ order, mode = "customer" }: OrderCardProps) {
         </ul>
       </div>
 
-      <div className="mt-5 flex items-center justify-between border-t border-ink/8 pt-4">
-        <p className="text-sm text-ink-soft">Estimated total</p>
-        <p className="text-base font-semibold text-ink">
-          {formatPrice(order.total)}
-        </p>
+      <div className="mt-5 space-y-2 border-t border-ink/8 pt-4 text-sm">
+        {paymentMethodLabel(order.paymentMethod) ? (
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-ink-soft">Payment</p>
+            <p className="text-right font-medium text-ink">
+              {paymentMethodLabel(order.paymentMethod)}
+              {paymentStatusLabel(order) ? ` · ${paymentStatusLabel(order)}` : ""}
+            </p>
+          </div>
+        ) : null}
+        {order.shippingAmount ? (
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-ink-soft">Shipping</p>
+            <p className="font-medium text-ink">{formatPrice(order.shippingAmount)}</p>
+          </div>
+        ) : null}
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-ink-soft">Total</p>
+          <p className="text-base font-semibold text-ink">{formatPrice(order.total)}</p>
+        </div>
       </div>
 
       <div className="mt-5">

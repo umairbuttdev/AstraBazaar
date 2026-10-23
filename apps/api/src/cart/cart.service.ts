@@ -185,4 +185,53 @@ export class CartService {
     await this.prisma.cartItem.delete({ where: { id: item.id } });
     return this.getCart(user);
   }
+
+  async moveToWishlist(user: User, itemId: string) {
+    const profile = await this.ensureProfile(user);
+    const cart = await this.getOrCreateCart(profile.id);
+
+    const item = await this.prisma.cartItem.findFirst({
+      where: { id: itemId, cartId: cart.id },
+      include: { variant: { select: { productId: true } } },
+    });
+
+    if (!item) {
+      throw new NotFoundException('Cart item not found');
+    }
+
+    const product = await this.prisma.product.findUnique({
+      where: { id: item.variant.productId },
+      select: { id: true },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      const wishlist = await tx.wishlist.upsert({
+        where: { profileId: profile.id },
+        update: {},
+        create: { profileId: profile.id },
+      });
+
+      await tx.wishlistItem.upsert({
+        where: {
+          wishlistId_productId: {
+            wishlistId: wishlist.id,
+            productId: product.id,
+          },
+        },
+        update: {},
+        create: {
+          wishlistId: wishlist.id,
+          productId: product.id,
+        },
+      });
+
+      await tx.cartItem.delete({ where: { id: item.id } });
+    });
+
+    return this.getCart(user);
+  }
 }

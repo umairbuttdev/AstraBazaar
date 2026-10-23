@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Manrope, Syne } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
+import { StoreHeaderGate } from "@/components/store-header-gate";
 import { SiteHeaderFallback } from "@/components/site-header-fallback";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const syne = Syne({
@@ -18,11 +20,18 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
   title: {
     default: "AstraBazaar",
     template: "%s · AstraBazaar",
   },
   description: "Curated ecommerce for goods with gravity.",
+  openGraph: {
+    type: "website",
+    siteName: "AstraBazaar",
+    title: "AstraBazaar",
+    description: "Curated ecommerce for goods with gravity.",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -33,7 +42,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col font-sans">
         <Suspense fallback={<SiteHeaderFallback />}>
-          <SiteHeader />
+          <StoreHeaderGate>
+            <SiteHeader />
+          </StoreHeaderGate>
         </Suspense>
         {children}
       </body>

@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -19,6 +20,16 @@ import {
 export class CheckoutController {
   constructor(private readonly checkoutService: CheckoutService) {}
 
+  @Get('checkout')
+  quote(@Req() request: AuthenticatedRequest) {
+    return this.checkoutService.quote(request.user!);
+  }
+
+  @Get('checkout/addresses')
+  listAddresses(@Req() request: AuthenticatedRequest) {
+    return this.checkoutService.listAddresses(request.user!);
+  }
+
   @Post('checkout')
   placeOrder(
     @Req() request: AuthenticatedRequest,
@@ -28,8 +39,17 @@ export class CheckoutController {
   }
 
   @Get('orders')
-  listOrders(@Req() request: AuthenticatedRequest) {
-    return this.checkoutService.listOrders(request.user!);
+  listOrders(
+    @Req() request: AuthenticatedRequest,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('filter') filter?: string,
+  ) {
+    return this.checkoutService.listOrders(request.user!, {
+      page,
+      limit,
+      filter,
+    });
   }
 
   @Get('orders/:id')

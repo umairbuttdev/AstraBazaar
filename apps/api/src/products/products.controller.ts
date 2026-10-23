@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ProductStatus } from '@prisma/client';
+import { parseListProductsQuery } from './list-products.query.js';
 import { ProductsService } from './products.service.js';
 
 @Controller('products')
@@ -7,12 +7,8 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Get()
-  findAll(
-    @Query('category') category?: string,
-    @Query('brand') brand?: string,
-    @Query('status') status?: ProductStatus,
-  ) {
-    return this.productsService.findAll({ category, brand, status });
+  findAll(@Query() query: Record<string, string | string[] | undefined>) {
+    return this.productsService.findAll(parseListProductsQuery(query));
   }
 
   @Get(':slug')

@@ -54,4 +54,12 @@ export class CartController {
   ) {
     return this.cartService.removeItem(request.user!, itemId);
   }
+
+  @Post('items/:itemId/wishlist')
+  moveToWishlist(
+    @Req() request: AuthenticatedRequest,
+    @Param('itemId') itemId: string,
+  ) {
+    return this.cartService.moveToWishlist(request.user!, itemId);
+  }
 }

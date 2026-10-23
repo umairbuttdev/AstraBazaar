@@ -85,3 +85,9 @@ export async function removeCartItem(itemId: string) {
     method: "DELETE",
   });
 }
+
+export async function moveCartItemToWishlist(itemId: string) {
+  return cartFetch<Cart>(`/cart/items/${itemId}/wishlist`, {
+    method: "POST",
+  });
+}

@@ -1,26 +1,37 @@
 import Link from "next/link";
+import { AnnouncementBar } from "@/components/announcement-bar";
+import { SearchInput } from "@/components/ui/search-input";
 
 export function SiteHeaderFallback() {
   return (
-    <header className="sticky top-0 z-30 border-b border-ink/8 bg-paper/80 backdrop-blur-md">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 md:px-10">
-        <Link
-          href="/"
-          className="font-display text-base tracking-[0.16em] text-ink uppercase md:text-lg"
-        >
-          AstraBazaar
-        </Link>
-        <nav className="flex items-center gap-6 text-sm text-ink-soft md:gap-8">
-          <Link href="/#catalog" className="transition-colors hover:text-ink">
-            Catalog
+    <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur-md">
+      <AnnouncementBar />
+      <div className="border-b border-border">
+        <div className="container-page flex items-center gap-4 py-3 md:py-4">
+          <Link
+            href="/"
+            className="font-display text-base tracking-[0.14em] text-foreground uppercase md:text-lg"
+          >
+            AstraBazaar
           </Link>
-          <Link href="/login" className="transition-colors hover:text-ink">
-            Login
-          </Link>
-          <Link href="/signup" className="transition-colors hover:text-ink">
-            Signup
-          </Link>
-        </nav>
+          <div className="mx-auto hidden min-w-0 flex-1 lg:block lg:max-w-xl">
+            <div className="h-10 animate-pulse rounded-md bg-surface-secondary" />
+          </div>
+          <nav className="ml-auto flex items-center gap-4 text-sm text-foreground-muted">
+            <Link href="/login" className="hover:text-foreground">
+              Login
+            </Link>
+            <Link href="/wishlist" className="font-medium text-foreground">
+              Wishlist
+            </Link>
+            <Link href="/cart" className="font-medium text-foreground">
+              Cart
+            </Link>
+          </nav>
+        </div>
+        <div className="border-t border-border px-4 py-2 lg:hidden">
+          <SearchInput id="header-search-fallback" />
+        </div>
       </div>
     </header>
   );
